@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.Collections;
+using CommandLine;
 using ExcelTableComparer;
 using ExcelTableComparer.Parser;
 
@@ -20,39 +21,56 @@ parser
     {
         try
         {
-            var excelFile = options.InputFile;
-            var excelListsName = options.TableListNames.ToList();
+            var input = options.InputFile;
 
-            var table1 = reader.ReadExcelTable(excelFile, excelListsName[0]);
-            var table2 = reader.ReadExcelTable(excelFile, excelListsName[1]);
+            var excelDocument = new ExcelDocument(input);
+            excelDocument.ReadDocument();
+
+            Logger.Trace($"Readed {excelDocument[0].Count} rows from first worksheet");
+            Logger.Trace($"Readed {excelDocument[1].Count} rows from second worksheet");
+
+            bool Predicate(List<string> row1, List<string> row2) => row1[3] == row2[3] && row1[2] == row2[2];
+
+            // TODO: It is necessary to add the ability to create custom predicates
+            bool ValidateRows(List<string> row1, List<string> row2) => row1.Count > 3 && row2.Count > 3;
 
             Func<List<List<string>>, List<List<string>>, List<List<string>>> functor
                 = (t1, t2) => t2
                     .Where(row2 =>
-                        !t1.Any(row1 => row1.Count > 3 && row1[3] == row2[3] && row1[2] == row2[2])
+                        !t1.Any(row1 => ValidateRows(row1, row2) && Predicate(row1, row2))
                     )
                     .ToList();
 
             Func<List<List<string>>, List<List<string>>, List<List<string>>> test
                 = (t1, t2) => t2
                     .Where(row2 =>
-                        !t1.Any(row1 => row1.Count > 3 && !(row1[3] == row2[3] && row1[2] == row2[2]))
+                        !t1.Any(row1 => ValidateRows(row1, row2) && !Predicate(row1, row2))
                     )
                     .ToList();
 
-            var result2 = functor(table1, table2);
-            var result1 = functor(table2, table1);
+            var result1 = functor(excelDocument[1], excelDocument[0]);
+            Logger.Trace($"{result1.Count} rows from second table");
 
-            var output1 = "/Users/aai/Desktop/output1.xlsx";
-            var output2 = "/Users/aai/Desktop/output2.xlsx";
+            var result2 = functor(excelDocument[0], excelDocument[1]);
+            Logger.Trace($"{result2.Count} rows from first table");
 
-            File.Delete(output1);
-            File.Delete(output2);
+
+            var result1Worksheet = new ExcelWorksheetSlim(excelDocument[0].Name, result1);
+            var result2Worksheet = new ExcelWorksheetSlim(excelDocument[1].Name, result2);
 
             var res = test(result1, result2).Count;
-            printer.SaveTableToExcelDocument(output1,"List1", result1);
-            printer.SaveTableToExcelDocument(output2,"List2", result2);
-            Logger.Info($"test result: {res}, result1: {result1.Count}, result2: {result2.Count}. Done!");
+            Logger.Trace($"Test result: {res}");
+            if (res != 0)
+            {
+                Logger.Error("Test failed");
+                statusCode = 1;
+            }
+
+            File.Delete(options.OutputFile);
+            var output = new ExcelDocument(options.OutputFile);
+            output.AddWorksheet(result1Worksheet);
+            output.AddWorksheet(result2Worksheet);
+            output.SaveDocument();
         }
         catch (Exception ex)
         {

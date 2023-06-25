@@ -1,6 +1,9 @@
+using OfficeOpenXml;
+
 namespace ExcelTableComparer.Parser;
 
 public interface IExcelDocumentReader
 {
-    List<List<string>> ReadExcelTable(string excelFile, string listName);
+    ExcelWorksheetSlim ReadDocumentWorksheet(ExcelPackage package, string worksheetName);
+    ExcelWorksheetSlim ReadDocumentWorksheet(ExcelWorksheet worksheet);
 }

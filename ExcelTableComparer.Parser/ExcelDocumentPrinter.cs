@@ -4,7 +4,7 @@ namespace ExcelTableComparer.Parser;
 
 public class ExcelDocumentPrinter : IExcelDocumentPrinter
 {
-    public void PrintExcelTable(IEnumerable<IEnumerable<string>> table)
+    public void PrintExcelWorksheet(IEnumerable<IEnumerable<string>> table)
     {
         foreach (var rowData in table)
         {
@@ -16,7 +16,7 @@ public class ExcelDocumentPrinter : IExcelDocumentPrinter
         }
     }
 
-    public void PrintExcelTableToFile(IEnumerable<IEnumerable<string>> table, string fileName)
+    public void PrintExcelWorksheetToFile(IEnumerable<IEnumerable<string>> table, string fileName)
     {
         foreach (var rowData in table)
         {
@@ -28,22 +28,17 @@ public class ExcelDocumentPrinter : IExcelDocumentPrinter
         }
     }
 
-    public void SaveTableToExcelDocument(string excelFile, string listName, List<List<string>> dataCollection)
+    public void SaveWorksheetToExcelDocument(ExcelPackage package, ExcelWorksheetSlim worksheetSlim)
     {
-        using var package = new ExcelPackage();
-        var c = package.Workbook.Worksheets.Count;
-        ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(listName);
+        var worksheet = package.Workbook.Worksheets.Add(worksheetSlim.Name);
 
-        for (int row = 0; row < dataCollection.Count; row++)
+        for (var row = 0; row < worksheetSlim.Count; row++)
         {
-            List<string> rowData = dataCollection[row];
-            for (int col = 0; col < rowData.Count; col++)
+            var rowData = worksheetSlim[row];
+            for (var col = 0; col < rowData.Count; col++)
             {
                 worksheet.Cells[row + 1, col + 1].Value = rowData[col];
             }
         }
-
-        FileInfo file = new FileInfo(excelFile);
-        package.SaveAs(file);
     }
 }

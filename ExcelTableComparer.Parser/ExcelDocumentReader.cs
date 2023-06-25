@@ -9,11 +9,11 @@ public class ExcelDocumentReader : IExcelDocumentReader
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
 
-    public List<List<string>> ReadExcelTable(string excelFile, string listName)
+    public ExcelWorksheetSlim ReadDocumentWorksheet(ExcelPackage package, string worksheetName) =>
+        ReadDocumentWorksheet(package.Workbook.Worksheets[worksheetName]);
+
+    public ExcelWorksheetSlim ReadDocumentWorksheet(ExcelWorksheet worksheet)
     {
-        using var package = new ExcelPackage(new FileInfo(excelFile));
-        var workbook = package.Workbook;
-        var worksheet = workbook.Worksheets[listName];
         var dataCollection = new List<List<string>>();
 
         for (var row = 1; row <= worksheet.Dimension.Rows; row++)
@@ -25,9 +25,11 @@ public class ExcelDocumentReader : IExcelDocumentReader
                 var cellData = cellValue != null ? cellValue.ToString() : string.Empty;
                 rowData.Add(cellData);
             }
+
             dataCollection.Add(rowData);
         }
 
-        return dataCollection;
+        return new ExcelWorksheetSlim(worksheet.Name, dataCollection);
     }
+
 }

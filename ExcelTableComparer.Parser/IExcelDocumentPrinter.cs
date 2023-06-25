@@ -1,7 +1,10 @@
+using OfficeOpenXml;
+
 namespace ExcelTableComparer.Parser;
 
 public interface IExcelDocumentPrinter
 {
-    void PrintExcelTable(IEnumerable<IEnumerable<string>> table);
-    void SaveTableToExcelDocument(string excelFile, string listName, List<List<string>> dataCollection);
+    void PrintExcelWorksheet(IEnumerable<IEnumerable<string>> table);
+    void PrintExcelWorksheetToFile(IEnumerable<IEnumerable<string>> table, string fileName);
+    void SaveWorksheetToExcelDocument(ExcelPackage package, ExcelWorksheetSlim worksheetSlim);
 }
