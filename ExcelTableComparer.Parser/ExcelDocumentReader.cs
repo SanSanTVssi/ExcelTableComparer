@@ -1,8 +1,8 @@
 using OfficeOpenXml;
 
-namespace ExcelExtensionTool;
+namespace ExcelTableComparer.Parser;
 
-public class ExcelDocumentReader
+public class ExcelDocumentReader : IExcelDocumentReader
 {
     public ExcelDocumentReader()
     {

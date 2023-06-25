@@ -1,8 +1,8 @@
 using OfficeOpenXml;
 
-namespace ExcelExtensionTool;
+namespace ExcelTableComparer.Parser;
 
-public class ExcelDocumentPrinter
+public class ExcelDocumentPrinter : IExcelDocumentPrinter
 {
     public void PrintExcelTable(IEnumerable<IEnumerable<string>> table)
     {
