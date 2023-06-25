@@ -11,8 +11,6 @@ var parser = new Parser(settings =>
     settings.HelpWriter = Console.Out;
 });
 
-var reader = new ExcelDocumentReader();
-var printer = new ExcelDocumentPrinter();
 var statusCode = 0;
 
 parser
